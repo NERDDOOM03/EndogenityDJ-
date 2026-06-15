@@ -1,0 +1,7 @@
+node_modules/
+temporary screenshots/
+.claude/
+gh_repos.txt
+https:/
+.DS_Store
+*.DS_Store
