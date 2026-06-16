@@ -1959,12 +1959,53 @@ input[type="date"].mf-input{color-scheme:dark;}
 @media(max-width:900px) and (orientation:landscape){
   #tv-body{
     width:auto !important;
-    height:min(88svh,420px) !important;
+    height:min(86svh,380px) !important;
     aspect-ratio:16/9;
   }
   #tv-scene-inner{perspective:900px;}
-  #me-kw-wrap{flex-direction:row;justify-content:center;gap:32px;}
+
 }
+
+/* ── SINGLE-CARD NOTEBOOK MODE (activated by JS class) ── */
+#tv-notebook.nb-mobile .nb-back{
+  top:110% !important;
+  bottom:-300px !important;
+}
+#tv-notebook.nb-mobile .nb-active{
+  bottom:36px !important;
+}
+#tv-notebook.nb-mobile .nb-pg-title{font-size:clamp(0.80rem,1.8vw,1.05rem) !important;line-height:1.1 !important;}
+#tv-notebook.nb-mobile .nb-pg-text{font-size:clamp(10px,1.05vw,13px) !important;line-height:1.52 !important;}
+#tv-notebook.nb-mobile .nb-pg-img{width:36% !important;}
+#tv-notebook.nb-mobile .nb-pg-body{padding:8px 10px 6px 11px !important;}
+#tv-notebook.nb-mobile #tv-nb-mobile-nav{display:flex !important;}
+
+/* Mobile nav bar — hidden by default, shown in landscape mobile */
+#tv-nb-mobile-nav{
+  display:none;
+  position:absolute;bottom:0;left:0;right:0;height:36px;z-index:50;
+  align-items:center;justify-content:space-between;
+  padding:0 10px;
+  background:rgba(4,0,8,0.85);
+  border-top:1px solid rgba(255,43,214,0.15);
+}
+#tv-nb-prev,#tv-nb-next{
+  background:none;border:none;
+  color:rgba(255,43,214,0.75);
+  font-size:20px;line-height:1;
+  cursor:pointer;padding:4px 8px;
+  transition:color 150ms;
+  -webkit-tap-highlight-color:transparent;
+}
+#tv-nb-prev:disabled,#tv-nb-next:disabled{color:rgba(255,255,255,0.15);cursor:default;}
+#tv-nb-prev:not(:disabled):active,#tv-nb-next:not(:disabled):active{color:#FF2BD6;}
+#tv-nb-dots{display:flex;gap:5px;align-items:center;}
+.tv-nb-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:rgba(255,255,255,0.20);
+  transition:background 200ms;cursor:pointer;
+}
+.tv-nb-dot.tv-nb-dot-on{background:#FF2BD6;}
 
 /* ── ROTATE PROMPT OVERLAY ── */
 #nb-rotate-prompt{
@@ -2279,6 +2320,11 @@ input[type="date"].mf-input{color-scheme:dark;}
             <div id="tv-notebook">
               <button id="tv-nb-back"></button>
               <div id="tv-nb-scroll"></div>
+              <div id="tv-nb-mobile-nav">
+                <button id="tv-nb-prev" aria-label="Previous">‹</button>
+                <div id="tv-nb-dots"></div>
+                <button id="tv-nb-next" aria-label="Next">›</button>
+              </div>
             </div>
             <div id="tv-curve"></div>
             <div id="tv-flk"></div>
@@ -2819,8 +2865,12 @@ const meTV=(function(){
   const nbEl     =document.getElementById('tv-notebook');
   const nbScroll =document.getElementById('tv-nb-scroll');
   const nbBack   =document.getElementById('tv-nb-back');
+  const nbPrev   =document.getElementById('tv-nb-prev');
+  const nbNext   =document.getElementById('tv-nb-next');
+  const nbDots   =document.getElementById('tv-nb-dots');
 
   let on=false, nbOpen=false;
+  let _mobileActiveIdx=0;
   let tiltRaf=null, tiltTX=0, tiltTY=0, tiltCX=0, tiltCY=0;
   let vhsInit=false, vhsFrame=0, kwRaf=null;
   let colActive=[], colIdx=0;
@@ -3148,6 +3198,8 @@ const meTV=(function(){
         card.classList.add('nb-back');
       }
     });
+    /* keep mobile nav dots in sync when navigating */
+    updateMobileNav(activeIdx);
   }
 
   /* ─── BUILD NOTEBOOK ─── */
@@ -3187,11 +3239,46 @@ const meTV=(function(){
       });
       nbScroll.appendChild(page);
     });
+    /* set nb-active / nb-back classes so CSS targeting works */
+    positionCards(activeIdx,false);
     /* restore CSS transitions after paint */
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       nbScroll.querySelectorAll('.nb-page').forEach(c=>c.style.transition='');
     }));
   }
+
+  function isMobileLandscape(){
+    return(window.innerWidth<=900||window.innerHeight<=900)&&window.innerWidth>window.innerHeight;
+  }
+
+  function updateMobileNav(activeIdx){
+    if(!nbDots||!nbPrev||!nbNext)return;
+    _mobileActiveIdx=activeIdx;
+    /* toggle mobile-nav class so CSS display:flex kicks in via JS-driven class */
+    if(isMobileLandscape()){
+      nbEl.classList.add('nb-mobile');
+    }else{
+      nbEl.classList.remove('nb-mobile');
+    }
+    const total=PAGES.length;
+    nbDots.innerHTML='';
+    for(let i=0;i<total;i++){
+      const d=document.createElement('div');
+      d.className='tv-nb-dot'+(i===activeIdx?' tv-nb-dot-on':'');
+      d.addEventListener('click',()=>positionCards(i,true));
+      nbDots.appendChild(d);
+    }
+    if(nbPrev) nbPrev.disabled=(activeIdx===0);
+    if(nbNext) nbNext.disabled=(activeIdx===total-1);
+  }
+
+  /* hook prev/next buttons */
+  if(nbPrev) nbPrev.addEventListener('click',()=>{
+    if(_mobileActiveIdx>0) positionCards(_mobileActiveIdx-1,true);
+  });
+  if(nbNext) nbNext.addEventListener('click',()=>{
+    if(_mobileActiveIdx<PAGES.length-1) positionCards(_mobileActiveIdx+1,true);
+  });
 
   function openNotebook(kwIdx){
     const idx=kwIdx>=0?kwIdx:0;
@@ -3202,7 +3289,7 @@ const meTV=(function(){
       window.showRotatePrompt(idx);
       return;
     }
-    /* Mobile landscape → open notebook in TV directly (TV is wide enough) */
+    /* Mobile landscape → open notebook in TV (single-card mode via CSS) */
     if(nbOpen)return;
     tiltEl.classList.add('tv-tip');
     setTimeout(()=>tiltEl.classList.remove('tv-tip'),960);
