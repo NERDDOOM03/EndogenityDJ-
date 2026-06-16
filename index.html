@@ -625,6 +625,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
     max-height:88vh;
     overflow-y:auto;
   }
+
+  /* Notebook pages — more readable at tablet sizes */
+  .nb-pg-text{font-size:clamp(11px,1.1vw,13px) !important;line-height:1.60 !important;}
+  .nb-pg-body{padding:12px 10px 8px 12px !important;}
+  .nb-pg-tag{font-size:8px !important;}
+  .nb-pg-idx{font-size:7px !important;}
 }
 
 /* ── MOBILE 480px ── */
@@ -666,9 +672,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   }
   .mc-img{height:clamp(50px,12vw,80px);}
 
-  /* Notebook page title */
-  .nb-pg-title{font-size:clamp(0.82rem,4.5vw,1.1rem) !important;}
-  .nb-pg-text{font-size:0.58rem !important;}
+  /* Notebook pages — readable at small screen */
+  .nb-pg-title{font-size:clamp(0.78rem,4vw,1.0rem) !important;margin-bottom:5px !important;}
+  .nb-pg-text{font-size:12px !important;line-height:1.55 !important;}
+  .nb-pg-body{padding:8px 8px 6px 10px !important;}
+  .nb-pg-img{width:32% !important;}
+  .nb-pg-tag{font-size:7.5px !important;letter-spacing:0.2em !important;}
+  .nb-pg-idx{font-size:6px !important;}
+  #tv-nb-back{font-size:7px !important;}
+  #tv-nb-back::before{font-size:9px !important;}
 }
 .sv-vis{margin-top:14px;height:52px;background:rgba(10,6,16,0.7);border:1px solid rgba(255,43,214,0.12);border-left:2px solid rgba(255,43,214,0.38);border-radius:4px;display:flex;align-items:center;padding:0 16px;font-size:9px;letter-spacing:0.2em;color:rgba(200,196,210,0.45);text-transform:uppercase;}
 .sv-wvf{display:flex;align-items:center;gap:2px;height:38px;margin-bottom:14px;max-width:380px;}
