@@ -3248,7 +3248,7 @@ const meTV=(function(){
   }
 
   function isMobileLandscape(){
-    return(window.innerWidth<=900||window.innerHeight<=900)&&window.innerWidth>window.innerHeight;
+    return window.innerWidth<1024&&window.innerWidth>window.innerHeight;
   }
 
   function updateMobileNav(activeIdx){
@@ -3282,7 +3282,7 @@ const meTV=(function(){
 
   function openNotebook(kwIdx){
     const idx=kwIdx>=0?kwIdx:0;
-    const isMobile=window.innerWidth<=900||window.innerHeight<=900;
+    const isMobile=window.innerWidth<1024;
     const isPortrait=window.innerHeight>window.innerWidth;
     /* Mobile portrait → show rotate prompt first */
     if(isMobile&&isPortrait&&window.showRotatePrompt){
