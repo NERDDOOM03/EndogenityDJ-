@@ -1955,6 +1955,102 @@ input[type="date"].mf-input{color-scheme:dark;}
   .mf-row{grid-template-columns:1fr;}
 }
 
+/* ── MOBILE LANDSCAPE — TV fills height ── */
+@media(max-width:900px) and (orientation:landscape){
+  #tv-body{
+    width:auto !important;
+    height:min(88svh,420px) !important;
+    aspect-ratio:16/9;
+  }
+  #tv-scene-inner{perspective:900px;}
+  #me-kw-wrap{flex-direction:row;justify-content:center;gap:32px;}
+}
+
+/* ── ROTATE PROMPT OVERLAY ── */
+#nb-rotate-prompt{
+  display:none;
+  position:fixed;inset:0;z-index:9600;
+  background:rgba(4,0,10,0.96);
+  backdrop-filter:blur(12px);
+  flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:0;
+  opacity:0;
+  transition:opacity 350ms ease;
+  pointer-events:none;
+}
+#nb-rotate-prompt.nrp-visible{
+  opacity:1;pointer-events:all;
+}
+@media(max-width:900px){
+  #nb-rotate-prompt{display:flex;}
+}
+/* Thin pink top stripe */
+#nb-rotate-prompt::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(to right,transparent,#FF2BD6,transparent);
+}
+.nrp-icon{
+  width:72px;height:72px;margin-bottom:32px;position:relative;
+}
+/* Phone shape */
+.nrp-phone{
+  width:32px;height:52px;border:2.5px solid rgba(255,43,214,0.75);
+  border-radius:6px;position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  animation:nrp-spin 2s cubic-bezier(0.4,0,0.2,1) infinite;
+}
+.nrp-phone::after{
+  content:'';position:absolute;bottom:5px;left:50%;
+  transform:translateX(-50%);
+  width:8px;height:2px;border-radius:2px;
+  background:rgba(255,43,214,0.6);
+}
+/* Arc arrows around phone */
+.nrp-arc{
+  position:absolute;inset:0;
+  border:2px solid transparent;
+  border-top-color:rgba(255,43,214,0.45);
+  border-radius:50%;
+  animation:nrp-arc-spin 2s cubic-bezier(0.4,0,0.2,1) infinite;
+}
+@keyframes nrp-spin{
+  0%  {transform:translate(-50%,-50%) rotate(0deg);}
+  40% {transform:translate(-50%,-50%) rotate(-90deg);}
+  60% {transform:translate(-50%,-50%) rotate(-90deg);}
+  100%{transform:translate(-50%,-50%) rotate(-90deg);}
+}
+@keyframes nrp-arc-spin{
+  0%  {transform:rotate(0deg);opacity:0.5;}
+  40% {transform:rotate(-120deg);opacity:1;}
+  100%{transform:rotate(-120deg);opacity:0.3;}
+}
+.nrp-title{
+  font-family:'Orbitron',sans-serif;font-weight:900;
+  font-size:clamp(0.85rem,4vw,1.1rem);
+  letter-spacing:0.18em;text-transform:uppercase;
+  color:#F4F1EA;text-align:center;
+  margin-bottom:10px;
+}
+.nrp-sub{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:13px;color:rgba(200,195,215,0.50);
+  text-align:center;margin-bottom:40px;
+  letter-spacing:0.04em;
+}
+.nrp-fallback{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:12px;color:rgba(255,43,214,0.60);
+  letter-spacing:0.06em;
+  background:none;border:none;cursor:pointer;
+  padding:10px 16px;
+  border-bottom:1px solid rgba(255,43,214,0.25);
+  transition:color 200ms,border-color 200ms;
+}
+.nrp-fallback:hover,.nrp-fallback:active{
+  color:#FF2BD6;border-color:rgba(255,43,214,0.60);
+}
+
 /* ── MOBILE NOTEBOOK FULLSCREEN OVERLAY ── */
 #nb-mobile-overlay{
   display:none;
@@ -3099,11 +3195,14 @@ const meTV=(function(){
 
   function openNotebook(kwIdx){
     const idx=kwIdx>=0?kwIdx:0;
-    /* On mobile use the fullscreen overlay instead of cramped in-TV view */
-    if(window.innerWidth<=768&&window.openMobileNotebook){
-      window.openMobileNotebook(idx);
+    const isMobile=window.innerWidth<=900||window.innerHeight<=900;
+    const isPortrait=window.innerHeight>window.innerWidth;
+    /* Mobile portrait → show rotate prompt first */
+    if(isMobile&&isPortrait&&window.showRotatePrompt){
+      window.showRotatePrompt(idx);
       return;
     }
+    /* Mobile landscape → open notebook in TV directly (TV is wide enough) */
     if(nbOpen)return;
     tiltEl.classList.add('tv-tip');
     setTimeout(()=>tiltEl.classList.remove('tv-tip'),960);
@@ -3174,6 +3273,14 @@ const meTV=(function(){
         colActive=[];
       },900);
     }
+  };
+
+  /* expose so rotate-prompt callback can fire the in-TV notebook after rotation */
+  window._openNotebookInTV=function(idx){
+    if(nbOpen)return;
+    buildNotebook(idx>=0?idx:0);
+    nbOpen=true;
+    nbEl.classList.add('nb-open');
   };
 })();
 
@@ -3553,6 +3660,51 @@ const soundScene=(function(){
     },{passive:true});
 
     window.openMobileNotebook=openMobileNotebook;
+  });
+})();
+
+/* ── ROTATE PROMPT ── */
+(function(){
+  document.addEventListener('DOMContentLoaded',function(){
+    const prompt=document.getElementById('nb-rotate-prompt');
+    const fallback=document.getElementById('nrp-fallback');
+    if(!prompt)return;
+
+    let pendingIdx=0;
+    let orientListener=null;
+
+    function showRotatePrompt(idx){
+      pendingIdx=idx;
+      prompt.classList.add('nrp-visible');
+      /* listen for device rotation to landscape */
+      orientListener=function(){
+        const isLandscape=window.innerWidth>window.innerHeight;
+        if(isLandscape){
+          hidePrompt();
+          /* give layout a frame to settle then open notebook in TV */
+          requestAnimationFrame(()=>requestAnimationFrame(()=>{
+            if(window._openNotebookInTV) window._openNotebookInTV(pendingIdx);
+          }));
+        }
+      };
+      window.addEventListener('resize',orientListener);
+    }
+
+    function hidePrompt(){
+      prompt.classList.remove('nrp-visible');
+      if(orientListener){
+        window.removeEventListener('resize',orientListener);
+        orientListener=null;
+      }
+    }
+
+    /* "Can't rotate?" → open fullscreen fallback overlay */
+    fallback.addEventListener('click',function(){
+      hidePrompt();
+      if(window.openMobileNotebook) window.openMobileNotebook(pendingIdx);
+    });
+
+    window.showRotatePrompt=showRotatePrompt;
   });
 })();
 
@@ -4070,6 +4222,17 @@ window.initAmpGL = function(){
       </div>
     </div>
   </div>
+</div>
+
+<!-- ROTATE PROMPT -->
+<div id="nb-rotate-prompt" role="dialog" aria-modal="true">
+  <div class="nrp-icon">
+    <div class="nrp-arc"></div>
+    <div class="nrp-phone"></div>
+  </div>
+  <div class="nrp-title">Rotate for the<br>full experience</div>
+  <div class="nrp-sub">Landscape mode unlocks the TV</div>
+  <button class="nrp-fallback" id="nrp-fallback">Can't rotate? View anyway →</button>
 </div>
 
 <!-- MOBILE NOTEBOOK FULLSCREEN OVERLAY -->
