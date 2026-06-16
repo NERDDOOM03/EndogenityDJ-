@@ -612,6 +612,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   .ma-td3{grid-column:1;grid-row:2;min-height:148px;}
   .ma-mf{grid-column:2;grid-row:2;min-height:148px;}
   .ma-herc{grid-column:1/3;grid-row:4;min-height:175px;}
+
+  /* ME section — TV fits inside viewport */
+  #tv-body{width:min(92vw,520px);}
+  #tv-scene-inner{perspective:700px;}
+
+  /* ME cards grid */
+  #me-cards-grid{
+    width:calc(100vw - 20px);
+    height:auto;
+    min-height:52vh;
+    max-height:88vh;
+    overflow-y:auto;
+  }
 }
 
 /* ── MOBILE 480px ── */
@@ -637,6 +650,28 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   /* Overlay text bigger on small screens for readability */
   .ma-ov-sm{font-size:13px !important;}
   .ma-ov-cn{font-size:12px !important;}
+
+  /* ME section — TV on small phones */
+  #tv-body{width:94vw;}
+  /* Hide keyword column, let photo fill TV screen */
+  #tv-inner{grid-template-columns:100% 0;}
+  #tv-right{display:none;}
+  /* Stand scales down */
+  #tv-stand-neck{width:42px;}
+  #tv-stand-base{width:120px;}
+
+  /* ME cards — single column on small phones */
+  #me-cards-grid{
+    grid-template-columns:1fr;
+    grid-template-rows:auto;
+    height:auto;max-height:82vh;overflow-y:auto;
+    width:calc(100vw - 16px);
+  }
+  .mc-img{height:clamp(50px,12vw,80px);}
+
+  /* Notebook page title */
+  .nb-pg-title{font-size:clamp(0.82rem,4.5vw,1.1rem) !important;}
+  .nb-pg-text{font-size:0.58rem !important;}
 }
 .sv-vis{margin-top:14px;height:52px;background:rgba(10,6,16,0.7);border:1px solid rgba(255,43,214,0.12);border-left:2px solid rgba(255,43,214,0.38);border-radius:4px;display:flex;align-items:center;padding:0 16px;font-size:9px;letter-spacing:0.2em;color:rgba(200,196,210,0.45);text-transform:uppercase;}
 .sv-wvf{display:flex;align-items:center;gap:2px;height:38px;margin-bottom:14px;max-width:380px;}
@@ -1696,6 +1731,220 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   border-color:rgba(255,43,214,0.60);
   filter:brightness(1.07) drop-shadow(0 0 16px rgba(255,43,214,0.32));
 }
+
+/* ══════════════════════════════════════════
+   CONTACT MODALS
+══════════════════════════════════════════ */
+.m-overlay{
+  position:fixed;inset:0;z-index:9500;
+  background:rgba(3,0,8,0.92);
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity 360ms var(--ease);
+  overflow-y:auto;padding:20px;
+}
+.m-overlay.open{opacity:1;pointer-events:all;}
+.m-overlay input,.m-overlay textarea,.m-overlay select{cursor:text;}
+.m-overlay button{cursor:pointer;}
+.m-close{
+  position:absolute;top:14px;right:14px;
+  width:34px;height:34px;
+  background:rgba(255,43,214,0.07);
+  border:1px solid rgba(255,43,214,0.20);
+  border-radius:50%;
+  color:rgba(255,43,214,0.50);font-size:12px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 220ms,border-color 220ms,color 220ms;
+  z-index:20;cursor:pointer;
+}
+.m-close:hover{background:rgba(255,43,214,0.16);border-color:rgba(255,43,214,0.60);color:#FF2BD6;}
+
+/* Shared form field styles */
+.mf-group{position:relative;margin-bottom:14px;}
+.mf-input{
+  width:100%;background:transparent;border:none;
+  border-bottom:1px solid rgba(255,43,214,0.20);
+  padding:9px 0;color:var(--off);
+  font-family:'Space Grotesk',sans-serif;
+  font-size:13px;letter-spacing:0.03em;
+  outline:none;display:block;
+  transition:border-color 240ms;
+}
+.mf-input:focus{border-bottom-color:rgba(255,43,214,0.75);}
+.mf-input::placeholder{
+  color:rgba(140,133,149,0.42);
+  font-size:9px;letter-spacing:0.24em;text-transform:uppercase;
+}
+textarea.mf-input{resize:none;height:72px;line-height:1.65;}
+input[type="date"].mf-input{color-scheme:dark;}
+.mf-row{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+.mf-btn{
+  width:100%;margin-top:6px;padding:13px;
+  font-family:'Orbitron',sans-serif;
+  font-size:8.5px;letter-spacing:0.44em;text-transform:uppercase;
+  color:rgba(255,43,214,0.88);
+  background:rgba(255,43,214,0.06);
+  border:1px solid rgba(255,43,214,0.28);border-radius:3px;
+  transition:background 260ms,border-color 260ms,color 260ms,box-shadow 260ms;
+  cursor:pointer;
+}
+.mf-btn:hover{
+  background:rgba(255,43,214,0.13);
+  border-color:rgba(255,43,214,0.68);color:#FF2BD6;
+  box-shadow:0 0 20px rgba(255,43,214,0.16);
+}
+.mf-btn:disabled{opacity:0.40;cursor:not-allowed;}
+.m-success{text-align:center;padding:28px 0;}
+.m-success-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(0.82rem,2vw,1.08rem);
+  font-weight:700;letter-spacing:0.20em;
+  color:#FF2BD6;margin-bottom:10px;text-transform:uppercase;
+}
+.m-success-sub{
+  font-size:12px;letter-spacing:0.07em;
+  color:rgba(200,196,210,0.60);
+}
+
+/* ── HEXAGON MODAL ── */
+.hex-wrap{
+  position:relative;width:min(560px,90vw);
+  display:flex;align-items:center;justify-content:center;
+}
+.hex-svg{width:100%;height:auto;display:block;overflow:visible;}
+.hex-outline{
+  fill:none;stroke:rgba(255,43,214,0.70);stroke-width:1.1;
+  filter:url(#hex-glow-f);
+  stroke-dasharray:1440;stroke-dashoffset:1440;
+}
+.hex-outline.draw{animation:hex-draw 1.0s cubic-bezier(0.16,1,0.3,1) forwards;}
+@keyframes hex-draw{to{stroke-dashoffset:0;}}
+.hex-travel{
+  fill:none;stroke:rgba(255,43,214,1);stroke-width:2.2;
+  stroke-dasharray:80 1360;stroke-dashoffset:1440;
+  filter:url(#hex-glow-f);
+}
+.hex-travel.go{animation:hex-travel-anim 1.1s 0.7s ease-in-out forwards;}
+@keyframes hex-travel-anim{
+  0%{stroke-dashoffset:1440;}
+  100%{stroke-dashoffset:-1440;}
+}
+.hex-corner-dot{
+  r:3.8;fill:rgba(255,43,214,0);
+  transition:fill 280ms,r 280ms;filter:url(#hex-glow-f);
+}
+.hex-corner-dot.lit{fill:rgba(255,43,214,1);}
+.hex-inner-line{fill:none;stroke:rgba(255,43,214,0.04);stroke-width:0.8;}
+.hex-panel{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(0.95);
+  width:60%;
+  background:rgba(4,0,10,0.82);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border:1px solid rgba(255,43,214,0.09);border-radius:5px;
+  padding:24px 22px 20px;
+  opacity:0;
+  transition:opacity 380ms 0.88s var(--ease),transform 380ms 0.88s var(--ease);
+}
+.hex-panel.visible{opacity:1;transform:translate(-50%,-50%) scale(1);}
+.hex-label{
+  font-family:'Orbitron',sans-serif;font-size:7px;
+  letter-spacing:0.42em;color:rgba(255,43,214,0.68);
+  text-transform:uppercase;display:block;margin-bottom:8px;
+}
+.hex-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(0.80rem,1.8vw,1.05rem);
+  font-weight:900;letter-spacing:0.06em;
+  color:var(--off);text-transform:uppercase;margin:0 0 5px;
+}
+.hex-sub{
+  font-size:9.5px;letter-spacing:0.08em;
+  color:rgba(200,196,210,0.40);margin:0 0 18px;line-height:1.65;
+}
+
+/* ── RADAR MODAL ── */
+.radar-wrap{
+  position:relative;width:min(560px,90vw);
+  display:flex;align-items:center;justify-content:center;
+}
+.radar-rings{position:relative;width:100%;}
+.radar-svg{
+  width:100%;height:auto;display:block;
+  transform-origin:center;
+  scale:0.88;opacity:0;
+  transition:opacity 500ms var(--ease),scale 600ms var(--ease);
+}
+.radar-svg.visible{scale:1;opacity:1;}
+.radar-ring{fill:none;stroke:rgba(255,43,214,0.09);stroke-width:0.9;}
+.radar-ring.outer{stroke:rgba(255,43,214,0.16);}
+.radar-cross{stroke:rgba(255,43,214,0.07);stroke-width:0.7;}
+.radar-cross.diag{stroke-dasharray:3 7;}
+.radar-sweep-g{
+  transform-origin:300px 300px;
+  animation:radar-spin 4.5s linear infinite;
+}
+@keyframes radar-spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.radar-sweep-line{stroke:rgba(255,43,214,0.82);stroke-width:1.4;filter:url(#rdr-glow);}
+.radar-trail{
+  position:absolute;inset:0;pointer-events:none;border-radius:50%;
+  background:conic-gradient(
+    from 270deg,
+    rgba(255,43,214,0) 0deg,
+    rgba(255,43,214,0.13) 52deg,
+    rgba(255,43,214,0.05) 65deg,
+    rgba(255,43,214,0) 78deg,
+    rgba(255,43,214,0) 360deg
+  );
+  animation:radar-spin 4.5s linear infinite;
+}
+.radar-panel{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:56%;
+  background:rgba(4,0,10,0.84);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border:1px solid rgba(255,43,214,0.09);border-radius:5px;
+  padding:18px 18px 16px;
+  opacity:0;
+  transition:opacity 480ms 0.55s var(--ease);
+}
+.radar-panel.visible{opacity:1;}
+.radar-label{
+  font-family:'Orbitron',sans-serif;font-size:7px;
+  letter-spacing:0.42em;color:rgba(255,43,214,0.68);
+  text-transform:uppercase;display:block;margin-bottom:7px;
+}
+.radar-title{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(0.68rem,1.4vw,0.88rem);
+  font-weight:900;letter-spacing:0.06em;
+  color:var(--off);text-transform:uppercase;margin:0 0 4px;
+}
+.radar-sub{
+  font-size:9px;letter-spacing:0.08em;
+  color:rgba(200,196,210,0.38);margin:0 0 14px;line-height:1.6;
+}
+.radar-panel .mf-input{font-size:12px;padding:7px 0;}
+.radar-panel .mf-group{margin-bottom:11px;}
+.radar-panel .mf-btn{padding:11px;font-size:8px;}
+
+/* Mobile: hide SVG frames, show panels as cards */
+@media(max-width:520px){
+  .hex-svg,.radar-rings{display:none;}
+  .hex-wrap,.radar-wrap{
+    width:90vw;display:block;
+  }
+  .hex-panel,.radar-panel{
+    position:relative;top:auto;left:auto;
+    transform:none;width:100%;
+    border:1px solid rgba(255,43,214,0.15);
+    padding:22px 18px 18px;
+  }
+  .hex-panel.visible,.radar-panel.visible{transform:none;}
+  .mf-row{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
@@ -2080,25 +2329,26 @@ const ZD={
     </div>
   </a>
 
-  <a href="mailto:w3berlndesigns@gmail.com" class="cb-card cb-em">
+  <div class="cb-card cb-em" role="button" tabindex="0" onclick="window.openHexModal&&window.openHexModal()">
     <div class="cb-glow cb-glow-em"></div>
     <div class="cb-inner">
-      <span class="cb-tag">Email</span>
+      <span class="cb-tag">CONTACT</span>
       <lottie-player class="cb-lot" src="Contact/Emailicon.json" background="transparent" speed="0.8" autoplay loop style="width:46px;height:46px;"></lottie-player>
-      <div class="cb-label">w3berlndesigns<br>@gmail.com</div>
+      <div class="cb-label" style="font-size:clamp(0.68rem,1.05vw,0.88rem);font-weight:700;letter-spacing:0.04em;line-height:1.3;">Send a Signal</div>
+      <div class="cb-sub" style="margin-top:2px;">Private channel.</div>
       <div class="cb-arrow">↗</div>
     </div>
-  </a>
+  </div>
 
-  <a href="mailto:w3berlndesigns@gmail.com?subject=Booking%20%26%20Collaboration" class="cb-card cb-bk">
+  <div class="cb-card cb-bk" role="button" tabindex="0" onclick="window.openRadarModal&&window.openRadarModal()">
     <div class="cb-glow cb-glow-bk"></div>
     <div class="cb-inner">
-      <span class="cb-tag">Work</span>
+      <span class="cb-tag">BOOKING</span>
       <dotlottie-player class="cb-lot" src="Contact/Colabicon" autoplay loop style="width:46px;height:46px;"></dotlottie-player>
-      <div class="cb-label">Bookings &amp;<br>Collabs</div>
+      <div class="cb-label" style="font-size:clamp(0.68rem,1.05vw,0.88rem);font-weight:700;letter-spacing:0.04em;line-height:1.3;">Bookings &amp;<br>Collabs</div>
       <div class="cb-arrow">↗</div>
     </div>
-  </a>
+  </div>
 
 </div>`}
 };
@@ -2974,6 +3224,130 @@ const soundScene=(function(){
 
 
 })();
+
+/* ═══════════════════════════════════════════════
+   HEXAGON CONTACT MODAL
+═══════════════════════════════════════════════ */
+(function(){
+  /* modals are at end of body — defer until DOM ready */
+  document.addEventListener('DOMContentLoaded',function(){
+  const overlay = document.getElementById('hex-modal');
+  if(!overlay) return;
+  const panel   = overlay.querySelector('.hex-panel');
+  const outline = overlay.querySelector('.hex-outline');
+  const travel  = overlay.querySelector('.hex-travel');
+  const corners = overlay.querySelectorAll('.hex-corner-dot');
+  const form    = document.getElementById('hex-form');
+  const success = document.getElementById('hex-success');
+  const btn     = form.querySelector('.mf-btn');
+
+  function openHexModal(){
+    overlay.classList.add('open');
+    // reset animations
+    outline.classList.remove('draw');
+    travel.classList.remove('go');
+    corners.forEach(c=>c.classList.remove('lit'));
+    panel.classList.remove('visible');
+    form.style.display='';
+    success.style.display='none';
+    form.reset();
+    btn.textContent='TRANSMIT';
+    btn.disabled=false;
+
+    void outline.offsetWidth;
+    outline.classList.add('draw');
+
+    // corner dots illuminate one by one
+    corners.forEach((c,i)=>setTimeout(()=>c.classList.add('lit'),180+i*90));
+    // traveling spark after outline is drawn
+    setTimeout(()=>{void travel.offsetWidth;travel.classList.add('go');},650);
+    // center panel fades in
+    setTimeout(()=>panel.classList.add('visible'),900);
+    // autofocus
+    setTimeout(()=>{const f=form.querySelector('.mf-input');if(f)f.focus();},1150);
+  }
+
+  function closeHexModal(){
+    overlay.classList.remove('open');
+    panel.classList.remove('visible');
+  }
+
+  overlay.addEventListener('click',e=>{if(e.target===overlay)closeHexModal();});
+  overlay.querySelector('.m-close').addEventListener('click',closeHexModal);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open'))closeHexModal();});
+
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    btn.textContent='TRANSMITTING…';btn.disabled=true;
+    try{
+      const res=await fetch('https://formspree.io/f/xpqenpdj',{
+        method:'POST',body:new FormData(form),
+        headers:{'Accept':'application/json'}
+      });
+      if(res.ok){form.style.display='none';success.style.display='block';}
+      else throw new Error();
+    }catch{btn.textContent='ERROR — RETRY';btn.disabled=false;}
+  });
+
+  window.openHexModal=openHexModal;
+  }); /* end DOMContentLoaded */
+})();
+
+/* ═══════════════════════════════════════════════
+   RADAR BOOKING MODAL
+═══════════════════════════════════════════════ */
+(function(){
+  document.addEventListener('DOMContentLoaded',function(){
+  const overlay = document.getElementById('radar-modal');
+  if(!overlay) return;
+  const svg     = overlay.querySelector('.radar-svg');
+  const panel   = overlay.querySelector('.radar-panel');
+  const form    = document.getElementById('radar-form');
+  const success = document.getElementById('radar-success');
+  const btn     = form.querySelector('.mf-btn');
+
+  function openRadarModal(){
+    overlay.classList.add('open');
+    svg.classList.remove('visible');
+    panel.classList.remove('visible');
+    form.style.display='';
+    success.style.display='none';
+    form.reset();
+    btn.textContent='REQUEST BOOKING';
+    btn.disabled=false;
+
+    setTimeout(()=>svg.classList.add('visible'),55);
+    setTimeout(()=>panel.classList.add('visible'),580);
+    setTimeout(()=>{const f=form.querySelector('.mf-input');if(f)f.focus();},880);
+  }
+
+  function closeRadarModal(){
+    overlay.classList.remove('open');
+    svg.classList.remove('visible');
+    panel.classList.remove('visible');
+  }
+
+  overlay.addEventListener('click',e=>{if(e.target===overlay)closeRadarModal();});
+  overlay.querySelector('.m-close').addEventListener('click',closeRadarModal);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open'))closeRadarModal();});
+
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    btn.textContent='SENDING…';btn.disabled=true;
+    try{
+      const res=await fetch('https://formspree.io/f/xdavjegq',{
+        method:'POST',body:new FormData(form),
+        headers:{'Accept':'application/json'}
+      });
+      if(res.ok){form.style.display='none';success.style.display='block';}
+      else throw new Error();
+    }catch{btn.textContent='ERROR — RETRY';btn.disabled=false;}
+  });
+
+  window.openRadarModal=openRadarModal;
+  }); /* end DOMContentLoaded */
+})();
+
 </script>
 
 <script type="module">
@@ -3380,5 +3754,115 @@ window.initAmpGL = function(){
 };
 
 </script>
+
+<!-- ══ HEXAGON CONTACT MODAL ══ -->
+<div id="hex-modal" class="m-overlay" role="dialog" aria-modal="true">
+  <div class="hex-wrap">
+    <button class="m-close" aria-label="Close">✕</button>
+    <svg class="hex-svg" viewBox="0 0 600 560" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="hex-glow-f" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <!-- inner subtle hex -->
+      <polygon class="hex-inner-line" points="300,128 424,198 424,338 300,408 176,338 176,198"/>
+      <!-- main outline — animated draw -->
+      <polygon class="hex-outline" points="300,40 508,160 508,400 300,520 92,400 92,160"/>
+      <!-- traveling spark -->
+      <polygon class="hex-travel"   points="300,40 508,160 508,400 300,520 92,400 92,160"/>
+      <!-- corner illumination dots -->
+      <circle class="hex-corner-dot" cx="300" cy="40"/>
+      <circle class="hex-corner-dot" cx="508" cy="160"/>
+      <circle class="hex-corner-dot" cx="508" cy="400"/>
+      <circle class="hex-corner-dot" cx="300" cy="520"/>
+      <circle class="hex-corner-dot" cx="92"  cy="400"/>
+      <circle class="hex-corner-dot" cx="92"  cy="160"/>
+    </svg>
+    <div class="hex-panel">
+      <span class="hex-label">CONTACT</span>
+      <h2 class="hex-title">Send a Signal</h2>
+      <p class="hex-sub">Open a private communication channel.</p>
+      <form id="hex-form" novalidate>
+        <div class="mf-group">
+          <input type="text" name="name" class="mf-input" placeholder="Name" required autocomplete="name">
+        </div>
+        <div class="mf-group">
+          <input type="email" name="email" class="mf-input" placeholder="Email" required autocomplete="email">
+        </div>
+        <div class="mf-group">
+          <textarea name="message" class="mf-input" placeholder="Message" required></textarea>
+        </div>
+        <button type="submit" class="mf-btn">TRANSMIT</button>
+      </form>
+      <div id="hex-success" class="m-success" style="display:none">
+        <div class="m-success-title">SIGNAL RECEIVED</div>
+        <div class="m-success-sub">Thanks for reaching out.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RADAR BOOKING MODAL ══ -->
+<div id="radar-modal" class="m-overlay" role="dialog" aria-modal="true">
+  <div class="radar-wrap">
+    <button class="m-close" aria-label="Close">✕</button>
+    <div class="radar-rings">
+      <svg class="radar-svg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="rdr-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- Concentric rings -->
+        <circle class="radar-ring outer" cx="300" cy="300" r="282"/>
+        <circle class="radar-ring" cx="300" cy="300" r="211"/>
+        <circle class="radar-ring" cx="300" cy="300" r="141"/>
+        <circle class="radar-ring" cx="300" cy="300" r="70"/>
+        <!-- Grid cross + diagonals -->
+        <line class="radar-cross" x1="18" y1="300" x2="582" y2="300"/>
+        <line class="radar-cross" x1="300" y1="18" x2="300" y2="582"/>
+        <line class="radar-cross diag" x1="101" y1="101" x2="499" y2="499"/>
+        <line class="radar-cross diag" x1="499" y1="101" x2="101" y2="499"/>
+        <!-- Sweep line + trailing arc -->
+        <g class="radar-sweep-g">
+          <path fill="rgba(255,43,214,0.08)" d="M300,300 L300,18 A282,282 0 0,1 499.5,158 Z"/>
+          <path fill="rgba(255,43,214,0.05)" d="M300,300 L300,18 A282,282 0 0,1 582,300 Z"/>
+          <line class="radar-sweep-line" x1="300" y1="300" x2="300" y2="18"/>
+        </g>
+      </svg>
+      <div class="radar-trail"></div>
+    </div>
+    <div class="radar-panel">
+      <span class="radar-label">BOOKING</span>
+      <h2 class="radar-title">Request a Booking</h2>
+      <p class="radar-sub">Open a performance request.</p>
+      <form id="radar-form" novalidate>
+        <div class="mf-row">
+          <div class="mf-group"><input type="text"  name="name"  class="mf-input" placeholder="Name"  required></div>
+          <div class="mf-group"><input type="email" name="email" class="mf-input" placeholder="Email" required></div>
+        </div>
+        <div class="mf-row">
+          <div class="mf-group"><input type="text" name="event" class="mf-input" placeholder="Event" required></div>
+          <div class="mf-group"><input type="text" name="city"  class="mf-input" placeholder="City"  required></div>
+        </div>
+        <div class="mf-group">
+          <input type="date" name="date" class="mf-input" required>
+        </div>
+        <div class="mf-group">
+          <textarea name="message" class="mf-input" placeholder="Message (optional)" style="height:58px;"></textarea>
+        </div>
+        <button type="submit" class="mf-btn">REQUEST BOOKING</button>
+      </form>
+      <div id="radar-success" class="m-success" style="display:none">
+        <div class="m-success-title">BOOKING REQUEST RECEIVED</div>
+        <div class="m-success-sub">I will get back to you shortly.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
