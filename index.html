@@ -1954,6 +1954,100 @@ input[type="date"].mf-input{color-scheme:dark;}
   .hex-panel.visible,.radar-panel.visible{transform:none;}
   .mf-row{grid-template-columns:1fr;}
 }
+
+/* ── MOBILE NOTEBOOK FULLSCREEN OVERLAY ── */
+#nb-mobile-overlay{
+  display:none;
+  position:fixed;inset:0;z-index:9500;
+  background:#04000A;
+  flex-direction:column;
+  transform:translateY(100%);
+  transition:transform 550ms cubic-bezier(0.16,1,0.3,1);
+}
+#nb-mobile-overlay.nmb-open{transform:translateY(0);}
+@media(max-width:768px){
+  #nb-mobile-overlay{display:flex;}
+}
+.nmb-topbar{
+  display:flex;align-items:center;
+  padding:18px 20px 14px;
+  border-bottom:1px solid rgba(255,43,214,0.15);
+  flex-shrink:0;position:relative;
+}
+.nmb-tag{
+  font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:0.32em;
+  color:#FF2BD6;text-transform:uppercase;opacity:0.92;
+}
+.nmb-num{
+  font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:0.2em;
+  color:rgba(200,195,215,0.30);margin-left:auto;margin-right:40px;
+}
+.nmb-close{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  background:none;border:1.5px solid rgba(255,255,255,0.12);
+  color:rgba(200,195,215,0.65);font-size:14px;
+  width:34px;height:34px;border-radius:50%;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:border-color 200ms,color 200ms;
+}
+.nmb-close:hover,.nmb-close:active{border-color:#FF2BD6;color:#FF2BD6;}
+.nmb-img-wrap{
+  width:100%;height:200px;flex-shrink:0;
+  position:relative;overflow:hidden;
+  background:#010006;
+  display:flex;align-items:center;justify-content:center;
+}
+.nmb-img-wrap img{
+  width:100%;height:100%;object-fit:cover;
+  object-position:center;
+  opacity:0.88;filter:brightness(0.85) saturate(0.90) contrast(1.05);
+}
+.nmb-img-wrap::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(to bottom,transparent 50%,#04000A 100%);
+}
+.nmb-body{
+  flex:1;overflow-y:auto;padding:22px 24px 16px;
+  -webkit-overflow-scrolling:touch;
+}
+.nmb-accent-bar{
+  width:28px;height:2px;border-radius:2px;
+  background:var(--nmb-accent,#FF2BD6);margin-bottom:14px;opacity:0.85;
+}
+.nmb-title{
+  font-family:'Orbitron',sans-serif;font-weight:900;
+  font-size:clamp(1.3rem,5.5vw,1.9rem);
+  text-transform:uppercase;line-height:1.15;letter-spacing:0.01em;
+  color:#F4F1EA;margin-bottom:16px;
+}
+.nmb-text{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:15px;line-height:1.75;
+  color:rgba(220,216,230,0.85);
+}
+.nmb-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px 20px;
+  border-top:1px solid rgba(255,255,255,0.055);
+  flex-shrink:0;
+}
+.nmb-arrow{
+  background:none;border:1.5px solid rgba(255,43,214,0.35);
+  color:#FF2BD6;font-size:17px;
+  width:44px;height:44px;border-radius:50%;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:border-color 200ms,background 200ms;
+  -webkit-tap-highlight-color:transparent;
+}
+.nmb-arrow:not(:disabled):active{border-color:#FF2BD6;background:rgba(255,43,214,0.12);}
+.nmb-arrow:disabled{opacity:0.22;cursor:default;}
+.nmb-dots{display:flex;gap:8px;align-items:center;}
+.nmb-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:rgba(255,255,255,0.18);transition:background 250ms,transform 250ms;
+  cursor:pointer;
+}
+.nmb-dot.nmb-dot-active{background:#FF2BD6;transform:scale(1.25);}
 </style>
 </head>
 <body>
@@ -3004,11 +3098,16 @@ const meTV=(function(){
   }
 
   function openNotebook(kwIdx){
+    const idx=kwIdx>=0?kwIdx:0;
+    /* On mobile use the fullscreen overlay instead of cramped in-TV view */
+    if(window.innerWidth<=768&&window.openMobileNotebook){
+      window.openMobileNotebook(idx);
+      return;
+    }
     if(nbOpen)return;
     tiltEl.classList.add('tv-tip');
     setTimeout(()=>tiltEl.classList.remove('tv-tip'),960);
-    /* build cards positioned correctly, then slide notebook in */
-    buildNotebook(kwIdx>=0?kwIdx:0);
+    buildNotebook(idx);
     nbOpen=true;
     nbEl.classList.add('nb-open');
   }
@@ -3355,6 +3454,106 @@ const soundScene=(function(){
 
   window.openRadarModal=openRadarModal;
   }); /* end DOMContentLoaded */
+})();
+
+/* ── MOBILE NOTEBOOK FULLSCREEN OVERLAY ── */
+(function(){
+  document.addEventListener('DOMContentLoaded',function(){
+    const overlay=document.getElementById('nb-mobile-overlay');
+    if(!overlay)return;
+
+    const tagEl  =document.getElementById('nmb-tag');
+    const numEl  =document.getElementById('nmb-num');
+    const imgEl  =document.getElementById('nmb-img');
+    const barEl  =document.getElementById('nmb-bar');
+    const titleEl=document.getElementById('nmb-title');
+    const textEl =document.getElementById('nmb-text');
+    const closeBtn=document.getElementById('nmb-close');
+    const prevBtn =document.getElementById('nmb-prev');
+    const nextBtn =document.getElementById('nmb-next');
+    const dotsEl  =document.getElementById('nmb-dots');
+
+    /* Must match PAGES array in ME TV module */
+    const PAGES=[
+      {num:'01',tag:'ORIGIN',title:'Everything\nStarted With This',
+       body:'Music was always around me. I played guitar, experimented with rhythm. After moving to Berlin, a visit to one of the city\'s iconic clubs opened the door. I bought my first controller — the Hercules DJControl Impulse 200.',
+       img:'ME/Firsthardware.png',accent:'#FF2BD6'},
+      {num:'02',tag:'ENDOGENEITY',title:'Why\nEndogeneity?',
+       body:'I first came across the word while studying statistics. The meaning stuck with me. I liked how unusual it sounded. Eventually it became the name of this project.',
+       img:'ME/Myimage.png',accent:'#7A4DFF'},
+      {num:'03',tag:'WHY I MIX',title:'A Hobby That\nBecame an Obsession',
+       body:'After moving to Berlin, electronic music became something I wanted to understand more deeply. For me, mixing is simply fun.',
+       img:'ME/Hardware.png',accent:'#E8E4DA'},
+      {num:'04',tag:'INFLUENCES',title:'What Shaped\nMy Sound',
+       body:'Berlin club culture. Underground electronic music. House. Minimal. Techno.',
+       img:'ME/Abstract.png',accent:'#7A4DFF'},
+      {num:'05',tag:'TIMELINE',title:'The Path\nSo Far',
+       body:'Berlin → First club experience → Hercules controller → Elektron Digitakt → Electronic drum machine → First recorded mix.',
+       img:'ME/Abstract2.png',accent:'#FF2BD6'}
+    ];
+
+    let cur=0,isOpen=false;
+
+    function buildDots(){
+      dotsEl.innerHTML='';
+      PAGES.forEach((_,i)=>{
+        const d=document.createElement('div');
+        d.className='nmb-dot'+(i===cur?' nmb-dot-active':'');
+        d.addEventListener('click',()=>showPage(i));
+        dotsEl.appendChild(d);
+      });
+    }
+
+    function showPage(idx){
+      cur=idx;
+      const pg=PAGES[idx];
+      tagEl.textContent=pg.tag;
+      numEl.textContent=pg.num;
+      imgEl.src=pg.img;
+      imgEl.alt=pg.tag;
+      barEl.style.background=pg.accent;
+      overlay.style.setProperty('--nmb-accent',pg.accent);
+      titleEl.innerHTML=pg.title.replace(/\n/g,'<br>');
+      textEl.textContent=pg.body;
+      prevBtn.disabled=(idx===0);
+      nextBtn.disabled=(idx===PAGES.length-1);
+      dotsEl.querySelectorAll('.nmb-dot').forEach((d,i)=>{
+        d.classList.toggle('nmb-dot-active',i===idx);
+      });
+    }
+
+    function openMobileNotebook(idx){
+      cur=typeof idx==='number'?idx:0;
+      buildDots();
+      showPage(cur);
+      overlay.classList.add('nmb-open');
+      document.body.style.overflow='hidden';
+      isOpen=true;
+    }
+
+    function closeMobileNotebook(){
+      overlay.classList.remove('nmb-open');
+      document.body.style.overflow='';
+      isOpen=false;
+    }
+
+    closeBtn.addEventListener('click',closeMobileNotebook);
+    prevBtn.addEventListener('click',()=>{if(cur>0)showPage(cur-1);});
+    nextBtn.addEventListener('click',()=>{if(cur<PAGES.length-1)showPage(cur+1);});
+
+    /* swipe support */
+    let touchX=0;
+    overlay.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX;},{passive:true});
+    overlay.addEventListener('touchend',e=>{
+      const dx=e.changedTouches[0].clientX-touchX;
+      if(Math.abs(dx)>50){
+        if(dx<0&&cur<PAGES.length-1)showPage(cur+1);
+        else if(dx>0&&cur>0)showPage(cur-1);
+      }
+    },{passive:true});
+
+    window.openMobileNotebook=openMobileNotebook;
+  });
 })();
 
 </script>
@@ -3870,6 +4069,28 @@ window.initAmpGL = function(){
         <div class="m-success-sub">I will get back to you shortly.</div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- MOBILE NOTEBOOK FULLSCREEN OVERLAY -->
+<div id="nb-mobile-overlay" role="dialog" aria-modal="true">
+  <div class="nmb-topbar">
+    <span class="nmb-tag" id="nmb-tag">TAG</span>
+    <span class="nmb-num" id="nmb-num">01</span>
+    <button class="nmb-close" id="nmb-close" aria-label="Close">✕</button>
+  </div>
+  <div class="nmb-img-wrap" id="nmb-img-wrap">
+    <img id="nmb-img" src="" alt="">
+  </div>
+  <div class="nmb-body">
+    <div class="nmb-accent-bar" id="nmb-bar"></div>
+    <div class="nmb-title" id="nmb-title"></div>
+    <div class="nmb-text" id="nmb-text"></div>
+  </div>
+  <div class="nmb-nav">
+    <button class="nmb-arrow" id="nmb-prev" aria-label="Previous">←</button>
+    <div class="nmb-dots" id="nmb-dots"></div>
+    <button class="nmb-arrow" id="nmb-next" aria-label="Next">→</button>
   </div>
 </div>
 
